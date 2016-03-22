@@ -1,0 +1,22 @@
+<div class="container">
+<h1>Welcome to the DASHBOARD</h1>
+  <div ng-controller='dashboardsController'>
+    <h4>Recent Products</h4>
+    <div class="dash_products" ng-repeat='product in products'>
+       <p class="p">{{product.name}}</p>
+      <img src="{{product.url}}" height='100' width="130" alt="">
+      <p>{{product.description}}</p>
+      <p>({{product.quantity}} left)</p>
+    </div>
+    <hr>
+    <h4>Recent Orders</h4>
+    <div class="dash_orders" ng-repeat='order in orders'>
+      <p><b>{{order.name}}</b> purchased {{order.quantity}} {{order.product}} on ({{order.created | date:'MMMM dd, yyyy'}}) </p>
+    </div>
+    <hr>
+    <h4>New Customers</h4>
+    <div class="dash_customers" ng-repeat='customer in customers'>
+      <p><b>{{customer.name}}</b> joined the store on {{customer.created | date: 'MMMM dd, yyyy'}}</p>
+    </div>
+  </div>
+</div>

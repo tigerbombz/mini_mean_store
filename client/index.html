@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini MEAN Store</title>
+  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js'/></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular-route.min.js"></script>
+
+  <style>
+  .container{
+    margin: 0 auto;
+  }
+  .products{
+    margin: 0 auto;
+    display: inline-block;
+    padding-right: 10px;
+    margin-right: 10px;
+    text-align: center;
+  }
+  .dash_products{
+    display: inline-block;
+    padding-right: 10px;
+    margin-right: 10px;
+    text-align: center;
+  }
+  </style>
+
+  <script>
+
+  var myApp = angular.module('myApp', ['ngRoute'] );
+
+  //CONFIG
+  myApp.config(function ($routeProvider){
+    $routeProvider
+    .when('/', {
+      templateUrl: 'static/partials/dashboard.html'
+    })
+    .when('/partial2', {
+      templateUrl: 'static/partials/orders.html'
+    })
+    .when('/partial3',{
+      templateUrl: 'static/partials/products.html'
+    })
+    .when('/partial4', {
+      templateUrl: 'static/partials/customers.html'
+    })
+    .otherwise({
+      redirectTo: '/'
+    });
+
+  });//END OF CONFIG
+
+
+  //CUSTOMER FACTORY
+  myApp.factory('customerFactory', function($http){
+    var customers = [];
+    var factory = {};
+
+    factory.index = function(callback){
+      $http.get('/customers').success(function(output){
+        output.forEach(function(customer) {
+
+           var timestamp = customer._id.toString().substring(0,8);
+           customer.created = new Date(parseInt(timestamp, 16 ) * 1000);
+        });
+        customers = output;
+
+        callback(customers);
+      })
+    }
+
+
+    factory.create = function(info, callback){
+      $http.post('/customers', info).success(function (output){
+        customers.push(output);
+      })
+    }
+
+    factory.delete = function(customer, callback){
+      $http.delete('/customers/' + customer._id).success(function (output){
+        console.log(output);
+      })
+        callback(customers);
+    }
+    return factory
+  })//END OF CUSTOMER FACTORY
+
+
+  //ORDER FACTORY
+  myApp.factory('orderFactory', function($http){
+    var orders = [];
+    var factory = {};
+
+    factory.index = function(callback){
+      $http.get('/orders').success(function (output){
+         output.forEach(function(order) {
+
+           var timestamp = order._id.toString().substring(0,8);
+           order.created = new Date(parseInt(timestamp, 16 ) * 1000);
+        });
+        orders = output;
+        console.log(orders);
+        callback(orders)
+      })
+    }
+
+    factory.create = function(info, callback){
+      $http.post('/orders', info).success(function (output){
+        orders.push(output)
+      })
+    }
+    return factory
+
+  })//END OF ORDER FACTORY
+
+  //PRODUCTS FACTORY
+  myApp.factory('productFactory', function($http){
+    var products = [];
+    var factory = {};
+
+    factory.index = function(callback){
+      $http.get('/products').success(function(output){
+        products = output;
+        callback(products);
+      })
+    }
+
+    factory.create = function(info, callback){
+      console.log(info );
+      $http.post('/products', info).success(function (output){
+        products.push(output);
+      })
+
+    }
+    return factory
+  })//END OF PRODUCTS FACTORY
+
+
+  //CUSTOMER CONTROLLER
+  myApp.controller('customersController', function($scope, customerFactory){
+    customerFactory.index(function (data){
+      $scope.customers = data;
+    })
+
+    $scope.create = function() {
+      if($scope.isDup()){
+        $scope.dup_msg = "Name is already taken";
+      }else {
+      customerFactory.create($scope.newCustomer, function(){
+        customerFactory.index(function(data){
+          console.log("test");
+          console.log(data);
+          $scope.customers = data;
+        })
+      })
+      $scope.newCustomer = {};
+    }
+    }
+
+    $scope.delete = function(customer){
+      customerFactory.delete(customer, function(){
+        customerFactory.index(function (customer){
+          $scope.customers = customer
+        })
+      })
+    }
+
+    $scope.isDup = function(){
+      for(var i=0; i<$scope.customers.length;i++){
+        if($scope.newCustomer !== undefined){
+          if($scope.newCustomer == $scope.customers[i].name){
+            $scope.dup_msg = "name is already in used!"
+            return true;
+          }
+        }
+      }
+      return false
+    }
+
+  })//END OF CUSTOMER CONTROLLER
+
+
+  //ORDERS CONTROLLER
+  myApp.controller('ordersController', function($scope, customerFactory, orderFactory, productFactory){
+    customerFactory.index(function (data){
+      $scope.customers = data;
+     })
+    orderFactory.index(function (data){
+      $scope.orders = data;
+    })
+    productFactory.index(function (data){
+      $scope.products = data;
+    })
+
+    $scope.create = function(){
+      orderFactory.create($scope.newOrder, function(){
+        orderFactory.index(function(data){
+          console.log(data);
+          $scope.orders = data;
+        })
+      })
+      $scope.newOrder = {};
+    }
+
+  })//END OF ORDERS CONTROLLER
+
+  //PRODUCTS CONTROLLER
+  myApp.controller('productsController', function($scope, productFactory){
+    productFactory.index(function (data){
+      $scope.products = data;
+    })
+
+    $scope.create = function(){
+      productFactory.create($scope.newProduct, function(){
+        productFactory.index(function(data){
+          $scope.products = data;
+        })
+      })
+      $scope.newProduct = {};
+    }
+  })//END OF PRODUCTS CONTROLLER
+
+  //DASHBOARD CONTROLLER
+  myApp.controller('dashboardsController', function($scope, productFactory, customerFactory, orderFactory){
+    customerFactory.index(function (data){
+      $scope.customers = data;
+     })
+    orderFactory.index(function (data){
+      $scope.orders = data;
+    })
+    productFactory.index(function (data){
+      $scope.products = data;
+    })
+
+  })//END OF DASHBOARD CONTROLLER
+
+
+  </script>
+
+</head>
+<body>
+  <div ng-app='myApp'>
+    <a href="#/">Dashboard</a> | <a href="#/partial2">Orders</a> | <a href="#/partial3">Products</a> | <a href="#/partial4">Customers</a>
+    <div ng-view=''></div>
+  </div>
+</body>
+</html>

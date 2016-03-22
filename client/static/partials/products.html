@@ -1,0 +1,22 @@
+<div ng-controller='productsController'>
+  <h1>Add a new product</h1>
+  <form>
+    Name: <input type="text" ng-model='newProduct.name'><br>
+    Image URL: <input type="text" ng-model='newProduct.url'><br>
+    Description: <input type="text" ng-model='newProduct.description'><br>
+    Initial Quanity: <select name="" id="" ng-model='newProduct.quantity'><br>
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="30">30</option>
+      <option value="40">40</option>
+      <option value="50">50</option>
+    </select>
+    <input type="submit" ng-click='create()' value="Create">
+  </form>
+  <div ng-repeat='product in products' class="products">
+    <p class="p">{{product.name}}</p>
+    <img src="{{product.url}}" height='100' width="130" alt="">
+    <p>{{product.description}}</p>
+    <p>({{product.quantity}} left)</p>
+  </div>
+</div>
